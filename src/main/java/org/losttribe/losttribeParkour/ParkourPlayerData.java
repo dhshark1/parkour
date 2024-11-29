@@ -1,7 +1,5 @@
 package org.losttribe.losttribeParkour;
 
-import org.bukkit.entity.Player;
-
 public class ParkourPlayerData {
     private boolean hasStarted;
     private int checkpointsPassed;

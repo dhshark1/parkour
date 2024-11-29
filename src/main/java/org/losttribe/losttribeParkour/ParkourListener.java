@@ -31,16 +31,9 @@ public class ParkourListener implements Listener {
     public void onPressurePlateStep(PlayerInteractEvent event) {
         if (event.getClickedBlock() == null) return;
 
-        plugin.getLogger().info("Player " +  event.getPlayer().getName() + " clicked a block: " + event.getClickedBlock().getType());
-
         Material plateMaterial = event.getClickedBlock().getType();
         Player player = event.getPlayer();
-        ParkourPlayerData data = playerData.get(player);
-
-        if (data == null) {
-            data = new ParkourPlayerData();
-            playerData.put(player, data);
-        }
+        ParkourPlayerData data = playerData.computeIfAbsent(player, k -> new ParkourPlayerData());
 
         if (plateMaterial.equals(startPlate) && !data.hasStarted()) {
             startParkour(player, data);
