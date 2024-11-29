@@ -4,11 +4,15 @@ import org.bukkit.entity.Player;
 
 public class ParkourPlayerData {
     private boolean hasStarted;
-    private int checkpointsPassed;  // Tracks which checkpoint they've passed (0 = none, 1 = oak, 2 = dark oak, 3 = spruce)
+    private int checkpointsPassed;
 
     public ParkourPlayerData() {
         this.hasStarted = false;
         this.checkpointsPassed = 0;
+    }
+
+    public int getCheckpointsPassed() {
+        return checkpointsPassed;
     }
 
     public boolean hasStarted() {
@@ -17,10 +21,6 @@ public class ParkourPlayerData {
 
     public void startParkour() {
         this.hasStarted = true;
-    }
-
-    public boolean hasPassedCheckpoint(int checkpointId) {
-        return checkpointsPassed >= checkpointId;
     }
 
     public void passCheckpoint() {

@@ -1,0 +1,10 @@
+name: Parkour
+version: 1.0-SNAPSHOT
+main: org.losttribe.losttribeParkour.LostTribeParkour
+author: Lost Tribe
+api-version: 1.21
+commands:
+  parkourstart:
+    description: Start the parkour game.
+  parkourcheckpoint:
+    description: A checkpoint in the parkour game.

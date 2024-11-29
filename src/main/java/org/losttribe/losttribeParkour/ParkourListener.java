@@ -15,10 +15,8 @@ public class ParkourListener implements Listener {
 
     private final LostTribeParkour plugin;
 
-    // Track player progress: maps player to their parkour data
     private final Map<Player, ParkourPlayerData> playerData = new HashMap<>();
 
-    // Define the pressure plates
     private final Material startPlate = Material.STONE_PRESSURE_PLATE;
     private final Material oakPlate = Material.OAK_PRESSURE_PLATE;
     private final Material darkOakPlate = Material.DARK_OAK_PRESSURE_PLATE;
@@ -29,71 +27,65 @@ public class ParkourListener implements Listener {
         this.plugin = plugin;
     }
 
-    // Player steps on a pressure plate
     @EventHandler
     public void onPressurePlateStep(PlayerInteractEvent event) {
         if (event.getClickedBlock() == null) return;
+
+        plugin.getLogger().info("Player " +  event.getPlayer().getName() + " clicked a block: " + event.getClickedBlock().getType());
 
         Material plateMaterial = event.getClickedBlock().getType();
         Player player = event.getPlayer();
         ParkourPlayerData data = playerData.get(player);
 
-        // If the player is not part of the parkour, ignore the pressure plates
-        if (data == null || !data.hasStarted()) {
-            return;
+        if (data == null) {
+            data = new ParkourPlayerData();
+            playerData.put(player, data);
         }
 
-        // Handle start plate (stone)
-        if (plateMaterial == startPlate) {
+        if (plateMaterial.equals(startPlate) && !data.hasStarted()) {
             startParkour(player, data);
         }
 
-        // Handle checkpoints (oak, dark oak, spruce)
-        if (plateMaterial == oakPlate && !data.hasPassedCheckpoint(1)) {
-            passCheckpoint(player, data, 1, "Oak");
-        } else if (plateMaterial == darkOakPlate && !data.hasPassedCheckpoint(2)) {
-            passCheckpoint(player, data, 2, "Dark Oak");
-        } else if (plateMaterial == sprucePlate && !data.hasPassedCheckpoint(3)) {
-            passCheckpoint(player, data, 3, "Spruce");
+        if (plateMaterial.equals(oakPlate) && data.getCheckpointsPassed() == 0 && data.hasStarted()) {
+            passCheckpoint(player, data,  "Oak");
+        } else if (plateMaterial.equals(darkOakPlate) && data.getCheckpointsPassed() == 1) {
+            passCheckpoint(player, data,  "Dark Oak");
+        } else if (plateMaterial.equals(sprucePlate)  && data.getCheckpointsPassed() == 2) {
+            passCheckpoint(player, data,  "Spruce");
         }
 
-        // Handle end plate (golden)
-        if (plateMaterial == endPlate && data.hasCompletedAllCheckpoints()) {
+        if (plateMaterial.equals(endPlate) && data.hasCompletedAllCheckpoints()) {
             endParkour(player, data);
         }
     }
 
-    // Handle player starting the parkour
     private void startParkour(Player player, ParkourPlayerData data) {
         data.startParkour();
         player.sendMessage("Parkour started! Reach the checkpoints in order.");
     }
 
-    // Handle player passing a checkpoint
-    private void passCheckpoint(Player player, ParkourPlayerData data, int checkpointId, String checkpointName) {
+    private void passCheckpoint(Player player, ParkourPlayerData data, String checkpointName) {
         data.passCheckpoint();
         player.sendMessage("You have reached the " + checkpointName + " checkpoint!");
     }
 
-    // Handle player reaching the end plate (winning)
     private void endParkour(Player player, ParkourPlayerData data) {
         player.sendMessage("Congratulations, you completed the parkour!");
+        data.resetProgress();
     }
 
-    // Handle player falling below Y=50 (losing)
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
+        int Y_LOCATION_THRESHOLD_FOR_RESET = 50;
         Player player = event.getPlayer();
         ParkourPlayerData data = playerData.get(player);
 
-        // If the player is in parkour and falls below Y=50, reset their progress
-        if (data != null && data.hasStarted() && player.getLocation().getY() < 50) {
+        if (data != null && data.hasStarted() && player.getLocation().getY() < Y_LOCATION_THRESHOLD_FOR_RESET) {
             data.resetProgress();
             player.sendMessage("You fell below Y=50! Your parkour progress has been reset.");
         }
     }
 
-    // Handle player quitting the game (remove their progress)
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         playerData.remove(event.getPlayer());
